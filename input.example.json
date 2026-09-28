@@ -1,0 +1,17 @@
+{
+  "keywords": "",
+  "location": "San Diego, CA",
+  "radiusMiles": 50,
+  "minSalary": 120000,
+  "employmentTypes": [
+    "full_time",
+    "part_time",
+    "contract"
+  ],
+  "startUrls": [
+    {
+      "url": "https://www.indeed.com/jobs?q=&l=San+Diego%2C+CA&salaryType=%24120%2C000%2B&radius=50&sc=0kf%3Aattr%2875GKK%7CCF3CP%7CNJXCK%252COR%29%3B"
+    }
+  ],
+  "maxResultsPerSource": 100
+}

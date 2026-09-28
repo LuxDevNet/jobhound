@@ -1,0 +1,22 @@
+{
+  "actorSpecification": 1,
+  "name": "jobhound",
+  "title": "Jobhound: multi-board job search",
+  "description": "One query across LinkedIn, Indeed, Glassdoor, Wellfound, Upwork, ZipRecruiter, Dice, SimplyHired, Monster, BuiltIn, RemoteOK, Remotive, Himalayas, We Work Remotely, HN Who's Hiring, and Greenhouse/Lever/Ashby company boards. Normalized, deduped, scored.",
+  "version": "1.0",
+  "buildTag": "latest",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "views": {
+        "overview": {
+          "title": "Jobs",
+          "transformation": { "fields": ["score", "title", "company", "location", "workMode", "salary.annualMin", "salary.annualMax", "postedAt", "seenOn", "url", "isNew"] },
+          "display": { "component": "table", "properties": { "url": { "format": "link" } } }
+        }
+      }
+    }
+  }
+}

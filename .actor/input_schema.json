@@ -1,0 +1,240 @@
+{
+  "title": "Jobhound input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "keywords": {
+      "title": "Keywords",
+      "type": "string",
+      "editor": "textfield",
+      "prefill": "software engineer",
+      "description": "Job title / skills. Leave empty for everything."
+    },
+    "location": {
+      "title": "Location",
+      "type": "string",
+      "editor": "textfield",
+      "prefill": "San Diego, CA"
+    },
+    "country": {
+      "title": "Country (ISO-2)",
+      "type": "string",
+      "editor": "textfield",
+      "default": "US"
+    },
+    "radiusMiles": {
+      "title": "Radius (miles)",
+      "type": "integer",
+      "editor": "number",
+      "prefill": 50
+    },
+    "postedWithinDays": {
+      "title": "Posted within",
+      "type": "string",
+      "editor": "select",
+      "enum": [
+        "",
+        "1",
+        "3",
+        "7",
+        "14",
+        "30"
+      ],
+      "enumTitles": [
+        "Any time",
+        "24 hours",
+        "3 days",
+        "7 days",
+        "14 days",
+        "30 days"
+      ],
+      "default": ""
+    },
+    "remoteOnly": {
+      "title": "Remote only",
+      "type": "boolean",
+      "default": false
+    },
+    "minSalary": {
+      "title": "Min annual salary",
+      "type": "integer",
+      "editor": "number",
+      "description": "Applied natively where supported (Indeed, LinkedIn, Glassdoor, ZipRecruiter, SimplyHired) and as a post-filter everywhere."
+    },
+    "employmentTypes": {
+      "title": "Employment types",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "full_time",
+          "part_time",
+          "contract",
+          "temporary",
+          "internship",
+          "freelance"
+        ]
+      },
+      "default": []
+    },
+    "sources": {
+      "title": "Boards",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "linkedin",
+          "indeed",
+          "glassdoor",
+          "wellfound",
+          "upwork",
+          "ziprecruiter",
+          "dice",
+          "simplyhired",
+          "monster",
+          "builtin",
+          "remoteok",
+          "remotive",
+          "himalayas",
+          "weworkremotely",
+          "hackernews"
+        ]
+      },
+      "default": [
+        "linkedin",
+        "indeed",
+        "glassdoor",
+        "wellfound",
+        "upwork",
+        "ziprecruiter",
+        "dice",
+        "simplyhired",
+        "builtin",
+        "remoteok",
+        "himalayas"
+      ]
+    },
+    "maxResultsPerSource": {
+      "title": "Max results per board",
+      "type": "integer",
+      "editor": "number",
+      "default": 100,
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "startUrls": {
+      "title": "Search URLs (optional)",
+      "type": "array",
+      "editor": "requestListSources",
+      "description": "Paste any board search URL straight from your browser (Indeed, LinkedIn, Glassdoor, \u2026) or a Greenhouse/Lever/Ashby board. Board is auto-detected; tracking params are stripped; replaces that board's generated search. Unknown sites use JSON-LD auto-extraction.",
+      "default": []
+    },
+    "companyBoards": {
+      "title": "Company ATS boards",
+      "type": "array",
+      "editor": "stringList",
+      "description": "e.g. greenhouse:stripe, lever:palantir, ashby:ramp",
+      "default": []
+    },
+    "fetchDetails": {
+      "title": "Fetch full descriptions",
+      "type": "boolean",
+      "default": true,
+      "description": "Extra request per job on LinkedIn/BuiltIn for description, seniority, salary, applicant count."
+    },
+    "titleInclude": {
+      "title": "Title must match (regex)",
+      "type": "array",
+      "editor": "stringList",
+      "default": []
+    },
+    "titleExclude": {
+      "title": "Title must NOT match (regex)",
+      "type": "array",
+      "editor": "stringList",
+      "default": [],
+      "prefill": [
+        "intern",
+        "principal"
+      ]
+    },
+    "excludeCompanies": {
+      "title": "Exclude companies",
+      "type": "array",
+      "editor": "stringList",
+      "default": []
+    },
+    "keepUnknownSalary": {
+      "title": "Keep jobs with no salary listed",
+      "type": "boolean",
+      "default": true
+    },
+    "onlyNew": {
+      "title": "Only new since last run",
+      "type": "boolean",
+      "default": false,
+      "description": "Use with a schedule for daily alerts."
+    },
+    "stateKey": {
+      "title": "State key",
+      "type": "string",
+      "editor": "textfield",
+      "default": "default",
+      "description": "Separate 'seen' memory per saved search."
+    },
+    "proxyConfiguration": {
+      "title": "Proxy (API/HTTP boards)",
+      "type": "object",
+      "editor": "proxy",
+      "description": "Optional. LinkedIn benefits from datacenter/residential proxy at high volume.",
+      "prefill": {
+        "useApifyProxy": true
+      }
+    },
+    "browserProxyConfiguration": {
+      "title": "Proxy (protected boards)",
+      "type": "object",
+      "editor": "proxy",
+      "description": "Indeed, Glassdoor, Upwork, ZipRecruiter, SimplyHired, Monster. Residential strongly recommended (default on Apify).",
+      "prefill": {
+        "useApifyProxy": true,
+        "apifyProxyGroups": [
+          "RESIDENTIAL"
+        ],
+        "apifyProxyCountry": "US"
+      }
+    },
+    "maxConcurrency": {
+      "title": "HTTP concurrency",
+      "type": "integer",
+      "editor": "number",
+      "default": 8
+    },
+    "browserMaxConcurrency": {
+      "title": "Browser concurrency",
+      "type": "integer",
+      "editor": "number",
+      "default": 3
+    },
+    "maxRequestRetries": {
+      "title": "Retries",
+      "type": "integer",
+      "editor": "number",
+      "default": 6
+    },
+    "diceApiKey": {
+      "title": "Dice API key",
+      "type": "string",
+      "editor": "textfield",
+      "description": "Public key from dice.com's frontend. Only change if it rotates.",
+      "default": "1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8"
+    },
+    "debug": {
+      "title": "Debug logs",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
