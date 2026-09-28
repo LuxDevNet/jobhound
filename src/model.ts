@@ -20,6 +20,12 @@ export const SOURCE_IDS = [
   "greenhouse",
   "lever",
   "ashby",
+  "smartrecruiters",
+  "workday",
+  "jobvite",
+  "workable",
+  "breezy",
+  "recruitee",
   // Any other URL: JSON-LD / embedded-JSON auto-extraction
   "generic",
 ] as const;
@@ -42,6 +48,7 @@ export interface Salary {
   annualMin: number | null;
   annualMax: number | null;
   raw: string | null;
+  hasEquity?: boolean;
 }
 
 /** What a source handler extracts. Everything except title is optional. */
