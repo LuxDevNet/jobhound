@@ -8,25 +8,28 @@
       "type": "string",
       "editor": "textfield",
       "prefill": "software engineer",
-      "description": "Job title / skills. Leave empty for everything."
+      "description": "Job title, keywords, or skills to search for. Leave empty for everything."
     },
     "location": {
       "title": "Location",
       "type": "string",
       "editor": "textfield",
-      "prefill": "San Diego, CA"
+      "prefill": "San Diego, CA",
+      "description": "City, state, or region for location-based searches."
     },
     "country": {
       "title": "Country (ISO-2)",
       "type": "string",
       "editor": "textfield",
-      "default": "US"
+      "default": "US",
+      "description": "Two-letter ISO country code (e.g. US, CA, GB, DE)."
     },
     "radiusMiles": {
       "title": "Radius (miles)",
       "type": "integer",
       "editor": "number",
-      "prefill": 50
+      "prefill": 50,
+      "description": "Search radius in miles around the specified location."
     },
     "postedWithinDays": {
       "title": "Posted within",
@@ -48,12 +51,14 @@
         "14 days",
         "30 days"
       ],
-      "default": ""
+      "default": "",
+      "description": "Filter jobs posted within the last N days."
     },
     "remoteOnly": {
       "title": "Remote only",
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Only include remote or work-from-home job postings."
     },
     "minSalary": {
       "title": "Min annual salary",
@@ -76,7 +81,8 @@
           "freelance"
         ]
       },
-      "default": []
+      "default": [],
+      "description": "Filter by employment types (full-time, part-time, contract, internship, freelance, temporary)."
     },
     "sources": {
       "title": "Boards",
@@ -99,7 +105,17 @@
           "remotive",
           "himalayas",
           "weworkremotely",
-          "hackernews"
+          "hackernews",
+          "greenhouse",
+          "lever",
+          "ashby",
+          "smartrecruiters",
+          "workday",
+          "jobvite",
+          "workable",
+          "breezy",
+          "recruitee",
+          "generic"
         ]
       },
       "default": [
@@ -114,7 +130,8 @@
         "builtin",
         "remoteok",
         "himalayas"
-      ]
+      ],
+      "description": "List of job boards and ATS sources to query."
     },
     "maxResultsPerSource": {
       "title": "Max results per board",
@@ -122,33 +139,35 @@
       "editor": "number",
       "default": 100,
       "minimum": 1,
-      "maximum": 5000
+      "maximum": 5000,
+      "description": "Maximum number of jobs to fetch per individual job board source."
     },
     "startUrls": {
       "title": "Search URLs (optional)",
       "type": "array",
       "editor": "requestListSources",
-      "description": "Paste any board search URL straight from your browser (Indeed, LinkedIn, Glassdoor, \u2026) or a Greenhouse/Lever/Ashby board. Board is auto-detected; tracking params are stripped; replaces that board's generated search. Unknown sites use JSON-LD auto-extraction.",
+      "description": "Paste any board search URL straight from your browser (Indeed, LinkedIn, Glassdoor, etc.) or a Greenhouse/Lever/Ashby board. Board is auto-detected; tracking params are stripped; replaces that board's generated search. Unknown sites use JSON-LD auto-extraction.",
       "default": []
     },
     "companyBoards": {
       "title": "Company ATS boards",
       "type": "array",
       "editor": "stringList",
-      "description": "e.g. greenhouse:stripe, lever:palantir, ashby:ramp",
+      "description": "Direct ATS company boards (e.g. greenhouse:stripe, lever:palantir, ashby:ramp, smartrecruiters:visa).",
       "default": []
     },
     "fetchDetails": {
       "title": "Fetch full descriptions",
       "type": "boolean",
       "default": true,
-      "description": "Extra request per job on LinkedIn/BuiltIn for description, seniority, salary, applicant count."
+      "description": "Perform an extra request per job on LinkedIn/BuiltIn/Indeed to fetch full descriptions, seniority, salary, and applicant counts."
     },
     "titleInclude": {
       "title": "Title must match (regex)",
       "type": "array",
       "editor": "stringList",
-      "default": []
+      "default": [],
+      "description": "Filter jobs whose titles match at least one of these regular expressions or keywords."
     },
     "titleExclude": {
       "title": "Title must NOT match (regex)",
@@ -158,37 +177,40 @@
       "prefill": [
         "intern",
         "principal"
-      ]
+      ],
+      "description": "Exclude jobs whose titles match any of these regular expressions or keywords."
     },
     "excludeCompanies": {
       "title": "Exclude companies",
       "type": "array",
       "editor": "stringList",
-      "default": []
+      "default": [],
+      "description": "List of company names to filter out completely from results."
     },
     "keepUnknownSalary": {
       "title": "Keep jobs with no salary listed",
       "type": "boolean",
-      "default": true
+      "default": true,
+      "description": "When minSalary is set, whether to keep jobs that have no listed salary information."
     },
     "onlyNew": {
       "title": "Only new since last run",
       "type": "boolean",
       "default": false,
-      "description": "Use with a schedule for daily alerts."
+      "description": "Only return jobs not previously seen in past runs. Ideal for scheduled daily alert runs."
     },
     "stateKey": {
       "title": "State key",
       "type": "string",
       "editor": "textfield",
       "default": "default",
-      "description": "Separate 'seen' memory per saved search."
+      "description": "Namespace identifier for tracking seen jobs per distinct search query."
     },
     "proxyConfiguration": {
       "title": "Proxy (API/HTTP boards)",
       "type": "object",
       "editor": "proxy",
-      "description": "Optional. LinkedIn benefits from datacenter/residential proxy at high volume.",
+      "description": "Proxy configuration for HTTP and API boards. Helps avoid rate limits.",
       "prefill": {
         "useApifyProxy": true
       }
@@ -197,7 +219,7 @@
       "title": "Proxy (protected boards)",
       "type": "object",
       "editor": "proxy",
-      "description": "Indeed, Glassdoor, Upwork, ZipRecruiter, SimplyHired, Monster. Residential strongly recommended (default on Apify).",
+      "description": "Proxy configuration for protected browser boards (Indeed, Glassdoor, ZipRecruiter, etc.). Residential proxy is strongly recommended.",
       "prefill": {
         "useApifyProxy": true,
         "apifyProxyGroups": [
@@ -210,31 +232,35 @@
       "title": "HTTP concurrency",
       "type": "integer",
       "editor": "number",
-      "default": 8
+      "default": 8,
+      "description": "Maximum number of simultaneous HTTP requests for API-based scrapers."
     },
     "browserMaxConcurrency": {
       "title": "Browser concurrency",
       "type": "integer",
       "editor": "number",
-      "default": 3
+      "default": 3,
+      "description": "Maximum number of simultaneous headless browser instances."
     },
     "maxRequestRetries": {
       "title": "Retries",
       "type": "integer",
       "editor": "number",
-      "default": 6
+      "default": 6,
+      "description": "Maximum number of retries per failed HTTP or browser request."
     },
     "diceApiKey": {
       "title": "Dice API key",
       "type": "string",
       "editor": "textfield",
-      "description": "Public key from dice.com's frontend. Only change if it rotates.",
+      "description": "Public API key for Dice search API.",
       "default": "1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8"
     },
     "debug": {
       "title": "Debug logs",
       "type": "boolean",
-      "default": false
+      "default": false,
+      "description": "Enable verbose debug logging for all scraper stages."
     }
   }
 }
