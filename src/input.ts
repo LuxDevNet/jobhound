@@ -46,6 +46,10 @@ export const InputSchema = z.object({
   browserMaxConcurrency: z.coerce.number().int().min(1).max(20).default(3),
   maxRequestRetries: z.coerce.number().int().min(0).max(20).default(6),
 
+  /** Distributed run sharding across multiple VMs/processes. */
+  shardTotal: z.coerce.number().int().min(1).default(1),
+  shardIndex: z.coerce.number().int().min(0).default(0),
+
   /** Dice's public search key (embedded in dice.com's frontend). Override if it rotates. */
   diceApiKey: z.string().default("1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8"),
   debug: z.boolean().default(false),

@@ -1,0 +1,54 @@
+# Distributed Jobhound Runner (5-worker sharded setup)
+# Usage:
+#   docker compose -f docker-compose.distributed.yml up --build
+
+services:
+  worker-1:
+    build:
+      context: .
+      dockerfile: .actor/Dockerfile
+    environment:
+      - CRAWLEE_STORAGE_DIR=/storage/shard-1
+    command: npx tsx src/cli.ts run -k "${KEYWORDS:-software engineer}" -l "${LOCATION:-San Diego, CA}" --shards 5 --shard 0
+    volumes:
+      - ./storage/distributed/shard-1:/storage/shard-1
+
+  worker-2:
+    build:
+      context: .
+      dockerfile: .actor/Dockerfile
+    environment:
+      - CRAWLEE_STORAGE_DIR=/storage/shard-2
+    command: npx tsx src/cli.ts run -k "${KEYWORDS:-software engineer}" -l "${LOCATION:-San Diego, CA}" --shards 5 --shard 1
+    volumes:
+      - ./storage/distributed/shard-2:/storage/shard-2
+
+  worker-3:
+    build:
+      context: .
+      dockerfile: .actor/Dockerfile
+    environment:
+      - CRAWLEE_STORAGE_DIR=/storage/shard-3
+    command: npx tsx src/cli.ts run -k "${KEYWORDS:-software engineer}" -l "${LOCATION:-San Diego, CA}" --shards 5 --shard 2
+    volumes:
+      - ./storage/distributed/shard-3:/storage/shard-3
+
+  worker-4:
+    build:
+      context: .
+      dockerfile: .actor/Dockerfile
+    environment:
+      - CRAWLEE_STORAGE_DIR=/storage/shard-4
+    command: npx tsx src/cli.ts run -k "${KEYWORDS:-software engineer}" -l "${LOCATION:-San Diego, CA}" --shards 5 --shard 3
+    volumes:
+      - ./storage/distributed/shard-4:/storage/shard-4
+
+  worker-5:
+    build:
+      context: .
+      dockerfile: .actor/Dockerfile
+    environment:
+      - CRAWLEE_STORAGE_DIR=/storage/shard-5
+    command: npx tsx src/cli.ts run -k "${KEYWORDS:-software engineer}" -l "${LOCATION:-San Diego, CA}" --shards 5 --shard 4
+    volumes:
+      - ./storage/distributed/shard-5:/storage/shard-5

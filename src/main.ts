@@ -39,15 +39,28 @@ for (const raw of input.startUrls) {
   overridden.add(id);
 }
 
+// Filter sources and boards if distributed sharding is enabled
+const activeSources = input.shardTotal > 1
+  ? input.sources.filter((_, idx) => idx % input.shardTotal === input.shardIndex)
+  : input.sources;
+
+const activeCompanyBoards = input.shardTotal > 1
+  ? input.companyBoards.filter((_, idx) => idx % input.shardTotal === input.shardIndex)
+  : input.companyBoards;
+
+if (input.shardTotal > 1) {
+  log.info(`[Distributed Mode] Running shard ${input.shardIndex + 1}/${input.shardTotal} (${activeSources.length} sources, ${activeCompanyBoards.length} ATS boards)`);
+}
+
 // Generate plans for configured sources that weren't overridden by explicit URLs
-for (const id of input.sources) {
+for (const id of activeSources) {
   if (!overridden.has(id) && SOURCES[id]) {
     plan.push(...SOURCES[id].plan(q, input));
   }
 }
 
 // Add company ATS boards (Greenhouse, Lever, Ashby, etc.)
-plan.push(...boardRequests(input.companyBoards));
+plan.push(...boardRequests(activeCompanyBoards));
 
 const tierOf = (label: string): "http" | "browser" => SOURCES[sourceOfLabel(label)]?.tier ?? "browser";
 const httpReqs = plan.filter((r) => tierOf(r.label) === "http");

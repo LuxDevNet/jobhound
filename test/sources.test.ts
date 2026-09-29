@@ -43,6 +43,8 @@ const dummyInput: Input = {
   maxConcurrency: 8,
   browserMaxConcurrency: 3,
   maxRequestRetries: 3,
+  shardTotal: 1,
+  shardIndex: 0,
   diceApiKey: "test-key",
   debug: false,
 };
