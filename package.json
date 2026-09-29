@@ -1,15 +1,42 @@
 {
   "name": "unjobbed",
   "version": "1.1.0",
-  "description": "Typed, multi-board job search pipeline on top of Apify actors. One query in, one clean deduped job list out.",
+  "description": "Typed, multi-board job search & intelligence pipeline. Scrapes LinkedIn, Indeed, Glassdoor, Wellfound, Dice, and direct ATS boards (Greenhouse, Lever, Ashby, Workday).",
   "type": "module",
-  "private": true,
+  "license": "MIT",
+  "author": "LuxDevNet",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LuxDevNet/jobhound.git"
+  },
+  "keywords": [
+    "job-scraper",
+    "job-search",
+    "crawlee",
+    "apify",
+    "playwright",
+    "greenhouse",
+    "lever",
+    "ashby",
+    "indeed",
+    "linkedin",
+    "ats"
+  ],
   "engines": {
     "node": ">=20.12"
   },
   "bin": {
     "unjobbed": "./src/cli.ts"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src",
+    "searches",
+    "README.md",
+    ".actor"
+  ],
   "scripts": {
     "jobs": "tsx src/cli.ts",
     "run:sd": "tsx src/cli.ts run san-diego-120k",
