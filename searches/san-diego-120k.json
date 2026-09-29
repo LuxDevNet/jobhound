@@ -1,0 +1,17 @@
+{
+  "name": "san-diego-120k",
+  "description": "Software Engineer in San Diego within 50 miles paying $120k+",
+  "keywords": "software engineer",
+  "location": "San Diego, CA",
+  "radiusMiles": 50,
+  "minSalary": 120000,
+  "postedWithinDays": 14,
+  "sources": [
+    "linkedin",
+    "indeed",
+    "glassdoor",
+    "wellfound",
+    "dice",
+    "builtin"
+  ]
+}

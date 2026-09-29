@@ -50,6 +50,19 @@ export const InputSchema = z.object({
   shardTotal: z.coerce.number().int().min(1).default(1),
   shardIndex: z.coerce.number().int().min(0).default(0),
 
+  /** Scrapling & stealth evasion engine settings. */
+  scrapling: z.boolean().default(false),
+  stealthHeaders: z.boolean().default(true),
+  humanEmulation: z.boolean().default(false),
+
+  /** Override base URLs per source or route through proxy scrapers (e.g. ScrapingBee/Scrapling endpoints). */
+  baseUrls: z.record(z.string(), z.string()).default({}),
+
+  /** Output endpoints: Webhooks, custom file exports, formats. */
+  webhookUrl: z.string().nullable().optional(),
+  outputPath: z.string().nullable().optional(),
+  outputFormat: z.enum(["json", "jsonl", "csv"]).default("json"),
+
   /** Dice's public search key (embedded in dice.com's frontend). Override if it rotates. */
   diceApiKey: z.string().default("1YAt0R9wBg4WfsF9VB2778F5CHLAPMVW3WAZcKd8"),
   debug: z.boolean().default(false),

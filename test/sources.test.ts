@@ -45,6 +45,11 @@ const dummyInput: Input = {
   maxRequestRetries: 3,
   shardTotal: 1,
   shardIndex: 0,
+  scrapling: false,
+  stealthHeaders: true,
+  humanEmulation: false,
+  baseUrls: {},
+  outputFormat: "json",
   diceApiKey: "test-key",
   debug: false,
 };

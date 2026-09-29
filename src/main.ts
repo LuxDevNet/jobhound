@@ -5,6 +5,8 @@ import { SOURCES, boardRequests, sourceOfLabel, type Ctx, type Req } from "./sou
 import { cleanUrl, detectSource } from "./lib/urls.ts";
 import { daysAgo } from "./lib/dates.ts";
 import { hash, normCity, normCompany, normTitle } from "./lib/text.ts";
+import { applyStealthToPage, getStealthHeaders } from "./lib/stealth.ts";
+import { exportToFile, sendWebhook } from "./lib/export.ts";
 import type { Job, RawJob, SourceId } from "./model.ts";
 
 await Actor.init();
@@ -62,6 +64,35 @@ for (const id of activeSources) {
 // Add company ATS boards (Greenhouse, Lever, Ashby, etc.)
 plan.push(...boardRequests(activeCompanyBoards));
 
+// Apply custom base URL overrides or proxy scraper wrappers
+if (input.baseUrls && Object.keys(input.baseUrls).length > 0) {
+  for (const r of plan) {
+    const srcId = sourceOfLabel(r.label);
+    const customBase = input.baseUrls[srcId] || input.baseUrls["*"];
+    if (customBase) {
+      try {
+        const originalUrl = new URL(r.url);
+        if (customBase.startsWith("http://") || customBase.startsWith("https://")) {
+          const overrideUrl = new URL(customBase);
+          if (customBase.includes("?url=") || customBase.includes("/api/")) {
+            // Proxy scraper endpoint (e.g. Scrapling / ScrapingBee / ScraperAPI)
+            r.url = customBase.includes("?")
+              ? `${customBase}&url=${encodeURIComponent(r.url)}`
+              : `${customBase}?url=${encodeURIComponent(r.url)}`;
+          } else {
+            // Domain/host mirror override
+            originalUrl.protocol = overrideUrl.protocol;
+            originalUrl.host = overrideUrl.host;
+            r.url = originalUrl.toString();
+          }
+        }
+      } catch (err: any) {
+        log.warning(`Could not apply baseUrls override "${customBase}" to "${r.url}": ${err.message}`);
+      }
+    }
+  }
+}
+
 const tierOf = (label: string): "http" | "browser" => SOURCES[sourceOfLabel(label)]?.tier ?? "browser";
 const httpReqs = plan.filter((r) => tierOf(r.label) === "http");
 const browserReqs = plan.filter((r) => tierOf(r.label) === "browser");
@@ -114,7 +145,7 @@ function handle(label: string, ctx: Ctx): Req[] {
 const toCrawlee = (r: Req) => ({
   url: r.url,
   label: r.label,
-  headers: r.headers,
+  headers: (input.scrapling || input.stealthHeaders) ? getStealthHeaders(r.headers) : r.headers,
   uniqueKey: r.uniqueKey ?? `${r.label}:${r.url}`,
   userData: { ...r.userData, label: r.label },
 });
@@ -280,6 +311,11 @@ const browser = new PlaywrightCrawler({
 
   preNavigationHooks: [
     async ({ page, request }) => {
+      // Inject anti-bot evasions and fingerprint shielding
+      if (input.scrapling || input.stealthHeaders) {
+        await applyStealthToPage(page, input.humanEmulation);
+      }
+
       // Block heavy images, video, fonts, and tracking scripts to maximize speed & save residential bandwidth
       await page.route(
         /\.(png|jpe?g|gif|webp|svg|woff2?|ttf|otf|mp4|webm)(\?|$)/i,
@@ -568,6 +604,27 @@ const summary = {
 
 await Actor.setValue("SUMMARY", summary);
 await Actor.setValue("OUTPUT", jobs.slice(0, 50));
+
+// Custom file export (JSON / JSONL / CSV)
+if (input.outputPath) {
+  try {
+    const exportedPath = await exportToFile(jobs, input.outputPath, input.outputFormat);
+    log.info(`[Export] Saved ${jobs.length} jobs to: ${exportedPath} (${input.outputFormat})`);
+  } catch (err: any) {
+    log.error(`[Export] Failed to export to ${input.outputPath}: ${err.message}`);
+  }
+}
+
+// Broadcast to external webhook endpoint if provided
+if (input.webhookUrl) {
+  log.info(`[Webhook] Streaming results to ${input.webhookUrl}...`);
+  const result = await sendWebhook(input.webhookUrl, { summary, jobs });
+  if (result.success) {
+    log.info(`[Webhook] Successfully delivered payload (HTTP ${result.status})`);
+  } else {
+    log.warning(`[Webhook] Delivery failed: ${result.error}`);
+  }
+}
 
 log.info(
   `Done! Successfully exported ${jobs.length} jobs (${collected.length} raw collected, ${summary.crossPosted} cross-posted). Sources: ${JSON.stringify(summary.perSource)}`,
