@@ -37,6 +37,19 @@ export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 export const WORK_MODES = ["remote", "hybrid", "onsite"] as const;
 export type WorkMode = (typeof WORK_MODES)[number];
 
+export const SENIORITY_LEVELS = [
+  "intern",
+  "entry",
+  "mid",
+  "senior",
+  "lead",
+  "staff",
+  "principal",
+  "director",
+  "executive",
+] as const;
+export type SeniorityLevel = (typeof SENIORITY_LEVELS)[number];
+
 export type SalaryPeriod = "hour" | "day" | "week" | "month" | "year" | "fixed";
 
 export interface Salary {
@@ -65,7 +78,10 @@ export interface RawJob {
   applyUrl?: string | null;
   description?: string | null;
   skills?: string[];
-  seniority?: string | null;
+  seniority?: SeniorityLevel | string | null;
+  yearsOfExperience?: number | null;
+  isDirectAts?: boolean;
+  companyStage?: string | null;
   companyUrl?: string | null;
   companyLogo?: string | null;
   applicants?: number | null;
@@ -100,4 +116,17 @@ export interface SearchQuery {
   minSalary: number | null;
   employmentTypes: EmploymentType[];
   maxResultsPerSource: number;
+
+  // Advanced High-Value Filters
+  seniorityLevels?: SeniorityLevel[];
+  minYearsExperience?: number | null;
+  maxYearsExperience?: number | null;
+  skillsInclude?: string[];
+  skillsExclude?: string[];
+  requireEquity?: boolean;
+  directApplyOnly?: boolean;
+  maxApplicants?: number | null;
+  descriptionInclude?: string[];
+  descriptionExclude?: string[];
+  workModes?: WorkMode[];
 }

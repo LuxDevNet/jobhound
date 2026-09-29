@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { EMPLOYMENT_TYPES, SOURCE_IDS, type SearchQuery } from "./model.ts";
+import {
+  EMPLOYMENT_TYPES,
+  SENIORITY_LEVELS,
+  SOURCE_IDS,
+  WORK_MODES,
+  type SearchQuery,
+} from "./model.ts";
 
 const PostedWithin = z
   .union([z.literal(""), z.coerce.number()])
@@ -7,18 +13,45 @@ const PostedWithin = z
 
 /** Mirrors .actor/input_schema.json. Zod gives us defaults + a single typed object. */
 export const InputSchema = z.object({
+  // Core Search Filters
   keywords: z.string().default(""),
   location: z.string().default(""),
   country: z.string().length(2).default("US"),
   radiusMiles: z.coerce.number().int().min(0).nullable().default(null),
   postedWithinDays: PostedWithin.nullable().default(null),
   remoteOnly: z.boolean().default(false),
+  workModes: z.array(z.enum(WORK_MODES)).default([]),
   minSalary: z.coerce.number().int().min(0).nullable().default(null),
   employmentTypes: z.array(z.enum(EMPLOYMENT_TYPES)).default([]),
 
+  // 10 High-Quality Advanced Precision Filters
+  seniorityLevels: z.array(z.enum(SENIORITY_LEVELS)).default([]),
+  minYearsExperience: z.coerce.number().int().min(0).nullable().default(null),
+  maxYearsExperience: z.coerce.number().int().min(0).nullable().default(null),
+  skillsInclude: z.array(z.string()).default([]),
+  skillsExclude: z.array(z.string()).default([]),
+  requireEquity: z.boolean().default(false),
+  directApplyOnly: z.boolean().default(false),
+  maxApplicants: z.coerce.number().int().min(0).nullable().default(null),
+  descriptionInclude: z.array(z.string()).default([]),
+  descriptionExclude: z.array(z.string()).default([]),
+
+  // Source & Board Controls
   sources: z
     .array(z.enum(SOURCE_IDS))
-    .default(["linkedin", "indeed", "glassdoor", "wellfound", "upwork", "ziprecruiter", "dice", "simplyhired", "builtin", "remoteok", "himalayas"]),
+    .default([
+      "linkedin",
+      "indeed",
+      "glassdoor",
+      "wellfound",
+      "upwork",
+      "ziprecruiter",
+      "dice",
+      "simplyhired",
+      "builtin",
+      "remoteok",
+      "himalayas",
+    ]),
   maxResultsPerSource: z.coerce.number().int().min(1).max(5000).default(100),
 
   /** Paste any job-board search URL. The board is auto-detected and its generated search is replaced. */
@@ -81,5 +114,17 @@ export function toQuery(i: Input): SearchQuery {
     minSalary: i.minSalary,
     employmentTypes: i.employmentTypes,
     maxResultsPerSource: i.maxResultsPerSource,
+
+    seniorityLevels: i.seniorityLevels,
+    minYearsExperience: i.minYearsExperience,
+    maxYearsExperience: i.maxYearsExperience,
+    skillsInclude: i.skillsInclude,
+    skillsExclude: i.skillsExclude,
+    requireEquity: i.requireEquity,
+    directApplyOnly: i.directApplyOnly,
+    maxApplicants: i.maxApplicants,
+    descriptionInclude: i.descriptionInclude,
+    descriptionExclude: i.descriptionExclude,
+    workModes: i.workModes,
   };
 }

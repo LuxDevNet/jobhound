@@ -60,11 +60,105 @@
       "default": false,
       "description": "Only include remote or work-from-home job postings."
     },
+    "workModes": {
+      "title": "Work arrangement",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "remote",
+          "hybrid",
+          "onsite"
+        ]
+      },
+      "default": [],
+      "description": "Filter by specific work arrangements (remote, hybrid, onsite)."
+    },
     "minSalary": {
       "title": "Min annual salary",
       "type": "integer",
       "editor": "number",
       "description": "Applied natively where supported (Indeed, LinkedIn, Glassdoor, ZipRecruiter, SimplyHired) and as a post-filter everywhere."
+    },
+    "requireEquity": {
+      "title": "Require equity / stock options",
+      "type": "boolean",
+      "default": false,
+      "description": "Only return jobs that explicitly offer stock options, RSUs, or equity compensation."
+    },
+    "seniorityLevels": {
+      "title": "Seniority levels",
+      "type": "array",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "intern",
+          "entry",
+          "mid",
+          "senior",
+          "lead",
+          "staff",
+          "principal",
+          "director",
+          "executive"
+        ]
+      },
+      "default": [],
+      "description": "Filter jobs matching specific career seniority tiers (senior, lead, staff, principal, etc.)."
+    },
+    "minYearsExperience": {
+      "title": "Min years experience",
+      "type": "integer",
+      "editor": "number",
+      "description": "Filter out jobs requiring less than this number of years of experience."
+    },
+    "maxYearsExperience": {
+      "title": "Max years experience",
+      "type": "integer",
+      "editor": "number",
+      "description": "Filter out jobs requiring more than this number of years of experience."
+    },
+    "skillsInclude": {
+      "title": "Must include skills",
+      "type": "array",
+      "editor": "stringList",
+      "default": [],
+      "description": "Jobs must require all of these technical skills (e.g. React, TypeScript, GraphQL, AWS)."
+    },
+    "skillsExclude": {
+      "title": "Must NOT include skills",
+      "type": "array",
+      "editor": "stringList",
+      "default": [],
+      "description": "Disqualify jobs that mention any of these unwanted skills or legacy tech."
+    },
+    "directApplyOnly": {
+      "title": "Direct company ATS only",
+      "type": "boolean",
+      "default": false,
+      "description": "Filter out recruiters and agency middlemen; only return direct company ATS applications (Greenhouse, Lever, Ashby, Workday)."
+    },
+    "maxApplicants": {
+      "title": "Max applicant threshold",
+      "type": "integer",
+      "editor": "number",
+      "description": "Exclude postings that already exceeded this number of applicants (e.g. max 50 applicants on LinkedIn/Indeed)."
+    },
+    "descriptionInclude": {
+      "title": "Description must contain (keywords)",
+      "type": "array",
+      "editor": "stringList",
+      "default": [],
+      "description": "Full-text description keyword matching (e.g. '401k match', 'unlimited PTO', 'visa sponsorship')."
+    },
+    "descriptionExclude": {
+      "title": "Description must NOT contain (keywords)",
+      "type": "array",
+      "editor": "stringList",
+      "default": [],
+      "description": "Exclude jobs whose descriptions contain these phrases (e.g. 'on-call 24/7', 'security clearance required')."
     },
     "employmentTypes": {
       "title": "Employment types",

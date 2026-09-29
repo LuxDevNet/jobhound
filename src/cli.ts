@@ -152,6 +152,35 @@ async function runScraper(flags: Record<string, any>, presetName?: string) {
     inputConfig.excludeCompanies = String(flags["exclude-companies"]).split(",").map((s) => s.trim());
   }
 
+  // 10 Advanced Precision Filters
+  if (flags.seniority) {
+    inputConfig.seniorityLevels = String(flags.seniority).split(",").map((s) => s.trim());
+  }
+  if (flags["min-exp"] || flags["min-experience"]) {
+    inputConfig.minYearsExperience = Number(flags["min-exp"] || flags["min-experience"]);
+  }
+  if (flags["max-exp"] || flags["max-experience"]) {
+    inputConfig.maxYearsExperience = Number(flags["max-exp"] || flags["max-experience"]);
+  }
+  if (flags.skills || flags["skills-include"]) {
+    inputConfig.skillsInclude = String(flags.skills || flags["skills-include"]).split(",").map((s) => s.trim());
+  }
+  if (flags["exclude-skills"] || flags["skills-exclude"]) {
+    inputConfig.skillsExclude = String(flags["exclude-skills"] || flags["skills-exclude"]).split(",").map((s) => s.trim());
+  }
+  if (flags.equity || flags["require-equity"]) inputConfig.requireEquity = true;
+  if (flags["direct-only"] || flags["ats-only"]) inputConfig.directApplyOnly = true;
+  if (flags["max-applicants"]) inputConfig.maxApplicants = Number(flags["max-applicants"]);
+  if (flags["desc-include"]) {
+    inputConfig.descriptionInclude = String(flags["desc-include"]).split(",").map((s) => s.trim());
+  }
+  if (flags["desc-exclude"]) {
+    inputConfig.descriptionExclude = String(flags["desc-exclude"]).split(",").map((s) => s.trim());
+  }
+  if (flags["work-modes"]) {
+    inputConfig.workModes = String(flags["work-modes"]).split(",").map((s) => s.trim());
+  }
+
   // Scrapling & Stealth
   if (flags.scrapling || flags.stealth) inputConfig.scrapling = true;
   if (flags.human) inputConfig.humanEmulation = true;

@@ -2,9 +2,9 @@ import { Actor, log } from "apify";
 import { CheerioCrawler, PlaywrightCrawler, RequestQueue, type ProxyConfiguration } from "crawlee";
 import { InputSchema, toQuery } from "./input.ts";
 import { SOURCES, boardRequests, sourceOfLabel, type Ctx, type Req } from "./sources.ts";
-import { cleanUrl, detectSource } from "./lib/urls.ts";
+import { cleanUrl, detectSource, isDirectApplyUrl } from "./lib/urls.ts";
 import { daysAgo } from "./lib/dates.ts";
-import { hash, normCity, normCompany, normTitle } from "./lib/text.ts";
+import { detectSeniority, extractYearsOfExperience, hash, normCity, normCompany, normTitle } from "./lib/text.ts";
 import { applyStealthToPage, getStealthHeaders } from "./lib/stealth.ts";
 import { exportToFile, sendWebhook } from "./lib/export.ts";
 import type { Job, RawJob, SourceId } from "./model.ts";
@@ -449,6 +449,14 @@ for (const { source, job } of collected) {
     continue;
   }
 
+  const exp = job.description ? extractYearsOfExperience(job.description) : null;
+  const detectedSeniority = job.seniority ?? detectSeniority(job.title, job.description);
+  const isDirect = Boolean(
+    job.isDirectAts ||
+    isDirectApplyUrl(job.url ?? "") ||
+    ["greenhouse", "lever", "ashby", "smartrecruiters", "workday", "jobvite", "workable", "breezy", "recruitee"].includes(source)
+  );
+
   byId.set(id, {
     id,
     source,
@@ -466,7 +474,10 @@ for (const { source, job } of collected) {
     applyUrl: job.applyUrl ?? null,
     description: job.description ?? null,
     skills: job.skills ?? [],
-    seniority: job.seniority ?? null,
+    seniority: detectedSeniority,
+    yearsOfExperience: job.yearsOfExperience ?? exp?.min ?? null,
+    isDirectAts: isDirect,
+    companyStage: job.companyStage ?? null,
     companyUrl: job.companyUrl ?? null,
     companyLogo: job.companyLogo ?? null,
     applicants: job.applicants ?? null,
@@ -499,20 +510,69 @@ const badCo = new Set(input.excludeCompanies.map(normCompany));
 const kws = q.keywords.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
 
 let jobs = [...byId.values()].filter((j) => {
+  // 1. Title include/exclude filters
   if (inc.length && !inc.some((r) => r.test(j.title))) return false;
   if (exc.some((r) => r.test(j.title))) return false;
   if (badCo.has(normCompany(j.company))) return false;
-  if (q.remoteOnly && j.workMode && j.workMode !== "remote") return false;
 
-  // Boards with no native geo filter: keep only remote roles or ones matching the searched city
+  // 2. Work mode & Remote filters
+  if (q.remoteOnly && j.workMode && j.workMode !== "remote") return false;
+  if (q.workModes?.length && j.workMode && !q.workModes.includes(j.workMode)) return false;
+
+  // 3. Seniority level filter
+  if (q.seniorityLevels?.length && j.seniority) {
+    if (!q.seniorityLevels.includes(j.seniority as any)) return false;
+  }
+
+  // 4. Years of experience min/max filters
+  if (q.minYearsExperience != null && j.yearsOfExperience != null && j.yearsOfExperience < q.minYearsExperience) {
+    return false;
+  }
+  if (q.maxYearsExperience != null && j.yearsOfExperience != null && j.yearsOfExperience > q.maxYearsExperience) {
+    return false;
+  }
+
+  // 5. Skills include & exclude filters
+  const fullText = `${j.title} ${j.description ?? ""} ${j.skills.join(" ")}`.toLowerCase();
+  if (q.skillsInclude?.length) {
+    const hasAll = q.skillsInclude.every((sk) => fullText.includes(sk.toLowerCase()));
+    if (!hasAll) return false;
+  }
+  if (q.skillsExclude?.length) {
+    const hasExcluded = q.skillsExclude.some((sk) => fullText.includes(sk.toLowerCase()));
+    if (hasExcluded) return false;
+  }
+
+  // 6. Require equity filter
+  if (q.requireEquity && !j.salary?.hasEquity) return false;
+
+  // 7. Direct ATS Apply only filter
+  if (q.directApplyOnly && !j.isDirectAts) return false;
+
+  // 8. Max applicants filter (avoid flooded postings)
+  if (q.maxApplicants != null && j.applicants != null && j.applicants > q.maxApplicants) return false;
+
+  // 9. Full-text description include/exclude keywords
+  if (q.descriptionInclude?.length) {
+    const desc = (j.description ?? "").toLowerCase();
+    if (!q.descriptionInclude.every((kw) => desc.includes(kw.toLowerCase()))) return false;
+  }
+  if (q.descriptionExclude?.length) {
+    const desc = (j.description ?? "").toLowerCase();
+    if (q.descriptionExclude.some((kw) => desc.includes(kw.toLowerCase()))) return false;
+  }
+
+  // 10. Geography & Location filter
   const city = q.location.split(",")[0]!.trim().toLowerCase();
   if (city && !q.remoteOnly && NO_GEO.has(j.source) && j.workMode !== "remote" && !(j.location ?? "").toLowerCase().includes(city)) {
     return false;
   }
 
+  // 11. Salary filters
   if (q.minSalary && (j.salary?.annualMax ?? null) != null && j.salary!.annualMax! < q.minSalary) return false;
   if (q.minSalary && !input.keepUnknownSalary && j.salary?.annualMax == null) return false;
 
+  // 12. Date posted recency filter
   const age = daysAgo(j.postedAt, now);
   if (q.postedWithinDays && age != null && age > q.postedWithinDays + 1) return false;
 

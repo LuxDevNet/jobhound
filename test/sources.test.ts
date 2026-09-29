@@ -6,7 +6,7 @@ import {
   SOURCES,
 } from "../src/sources.ts";
 import type { SearchQuery } from "../src/model.ts";
-import type { Input } from "../src/input.ts";
+import { InputSchema, type Input } from "../src/input.ts";
 
 const dummyQuery: SearchQuery = {
   keywords: "software engineer",
@@ -20,7 +20,7 @@ const dummyQuery: SearchQuery = {
   maxResultsPerSource: 50,
 };
 
-const dummyInput: Input = {
+const dummyInput: Input = InputSchema.parse({
   keywords: "software engineer",
   location: "San Francisco, CA",
   country: "US",
@@ -31,28 +31,8 @@ const dummyInput: Input = {
   employmentTypes: ["full_time"],
   sources: ["greenhouse", "lever", "ashby"],
   maxResultsPerSource: 50,
-  startUrls: [],
-  companyBoards: [],
-  fetchDetails: true,
-  titleInclude: [],
-  titleExclude: [],
-  excludeCompanies: [],
-  keepUnknownSalary: true,
-  onlyNew: false,
-  stateKey: "default",
-  maxConcurrency: 8,
-  browserMaxConcurrency: 3,
-  maxRequestRetries: 3,
-  shardTotal: 1,
-  shardIndex: 0,
-  scrapling: false,
-  stealthHeaders: true,
-  humanEmulation: false,
-  baseUrls: {},
-  outputFormat: "json",
   diceApiKey: "test-key",
-  debug: false,
-};
+});
 
 describe("sources.ts", () => {
   describe("parseBoard", () => {

@@ -1,5 +1,5 @@
 import { load } from "cheerio";
-import type { EmploymentType, WorkMode } from "../model.ts";
+import type { EmploymentType, SeniorityLevel, WorkMode } from "../model.ts";
 
 /**
  * Strips HTML, converts block tags to newlines, decodes entities,
@@ -211,6 +211,21 @@ export function detectEmploymentType(...texts: (string | null | undefined)[]): E
   if (/\btemp(orary)?\b|seasonal/.test(t)) return "temporary";
   if (/\bpart[- ]time\b/.test(t)) return "part_time";
   if (/\bfull[- ]time\b|permanent|regular|direct[- ]hire/.test(t)) return "full_time";
+  return null;
+}
+
+export function detectSeniority(...texts: (string | null | undefined)[]): SeniorityLevel | null {
+  const t = texts.filter(Boolean).join(" ").toLowerCase();
+  if (!t) return null;
+  if (/\b(executive|c-level|cto|cio|ciso|vp|vice president|head of)\b/.test(t)) return "executive";
+  if (/\b(director)\b/.test(t)) return "director";
+  if (/\b(principal)\b/.test(t)) return "principal";
+  if (/\b(staff)\b/.test(t)) return "staff";
+  if (/\b(lead|team lead|tech lead)\b/.test(t)) return "lead";
+  if (/\b(sr|senior|expert)\b/.test(t)) return "senior";
+  if (/\b(mid|intermediate|ii|iii)\b/.test(t)) return "mid";
+  if (/\b(entry|junior|jr|associate|entry level|graduate)\b/.test(t)) return "entry";
+  if (/\b(intern|internship|co-op)\b/.test(t)) return "intern";
   return null;
 }
 
