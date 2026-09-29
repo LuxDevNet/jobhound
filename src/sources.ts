@@ -49,6 +49,19 @@ const pages = (q: SearchQuery, per: number) => Math.max(1, Math.ceil(q.maxResult
 // ---------------------------------------------------------------- LinkedIn
 // Public guest endpoints (no login). 10 cards per page, up to ~1000.
 const LI_TYPES: Record<string, string> = { full_time: "F", part_time: "P", contract: "C", temporary: "T", internship: "I", freelance: "C" };
+const LI_EXP: Record<string, string> = {
+  intern: "1",
+  entry: "2",
+  mid: "3,4",
+  senior: "4",
+  lead: "4,5",
+  staff: "5",
+  principal: "5",
+  director: "5",
+  executive: "6",
+};
+const LI_WT: Record<string, string> = { onsite: "1", remote: "2", hybrid: "3" };
+
 const linkedinListUrl = (params: URLSearchParams, start: number) => {
   params.set("start", String(start));
   return `https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?${params}`;
@@ -60,7 +73,19 @@ const linkedin: Source = {
     const p = new URLSearchParams({ keywords: kw(q), location: q.location || (q.remoteOnly ? "United States" : "") });
     if (q.radiusMiles) p.set("distance", String(q.radiusMiles));
     if (q.postedWithinDays) p.set("f_TPR", `r${q.postedWithinDays * 86400}`);
-    if (q.remoteOnly) p.set("f_WT", "2");
+
+    if (q.workModes?.length) {
+      const wtCodes = [...new Set(q.workModes.map((w) => LI_WT[w]).filter(Boolean))];
+      if (wtCodes.length) p.set("f_WT", wtCodes.join(","));
+    } else if (q.remoteOnly) {
+      p.set("f_WT", "2");
+    }
+
+    if (q.seniorityLevels?.length) {
+      const expCodes = [...new Set(q.seniorityLevels.map((l) => LI_EXP[l]).filter((x): x is string => Boolean(x)).flatMap((x) => x.split(",")))];
+      if (expCodes.length) p.set("f_E", expCodes.join(","));
+    }
+
     const jt = [...new Set(q.employmentTypes.map((t) => LI_TYPES[t]).filter(Boolean))];
     if (jt.length) p.set("f_JT", jt.join(","));
     if (q.minSalary) p.set("f_SB2", String(Math.min(9, Math.max(1, Math.floor(q.minSalary / 20000) - 1)))); // 1=$40k … 9=$200k
@@ -146,6 +171,19 @@ const linkedin: Source = {
 // Dice's own frontend search API. 100 per page.
 const DICE_DAYS: Record<number, string> = { 1: "ONE", 3: "THREE", 7: "SEVEN", 14: "THIRTY", 30: "THIRTY" };
 const DICE_TYPES: Record<string, string> = { full_time: "FULLTIME", part_time: "PARTTIME", contract: "CONTRACTS", freelance: "CONTRACTS", temporary: "CONTRACTS" };
+const DICE_EXP: Record<string, string> = {
+  intern: "Entry",
+  entry: "Entry",
+  mid: "Mid",
+  senior: "Senior",
+  lead: "Senior",
+  staff: "Senior",
+  principal: "Senior",
+  director: "Senior",
+  executive: "Senior",
+};
+const DICE_WM: Record<string, string> = { remote: "Remote", hybrid: "Hybrid", onsite: "On-Site" };
+
 const dice: Source = {
   id: "dice",
   tier: "http",
@@ -154,7 +192,23 @@ const dice: Source = {
     if (q.location) p.set("location", q.location);
     if (q.radiusMiles) { p.set("radius", String(q.radiusMiles)); p.set("radiusUnit", "mi"); }
     if (q.postedWithinDays) p.set("filters.postedDate", DICE_DAYS[q.postedWithinDays]!);
-    if (q.remoteOnly) p.set("filters.workplaceTypes", "Remote");
+
+    if (q.workModes?.length) {
+      const wm = [...new Set(q.workModes.map((w) => DICE_WM[w]).filter(Boolean))];
+      if (wm.length) p.set("filters.workplaceTypes", wm.join("|"));
+    } else if (q.remoteOnly) {
+      p.set("filters.workplaceTypes", "Remote");
+    }
+
+    if (q.seniorityLevels?.length) {
+      const exp = [...new Set(q.seniorityLevels.map((l) => DICE_EXP[l]).filter(Boolean))];
+      if (exp.length) p.set("filters.experienceLevel", exp.join("|"));
+    }
+
+    if (q.minSalary) {
+      p.set("filters.salaryMin", String(q.minSalary));
+    }
+
     const t = [...new Set(q.employmentTypes.map((x) => DICE_TYPES[x]).filter(Boolean))];
     if (t.length) p.set("filters.employmentType", t.join("|"));
     return [{ url: `https://job-search-api.svc.dhigroupinc.com/v1/dice/jobs/search?${p}`, label: "dice:list", headers: { "x-api-key": input.diceApiKey, origin: "https://www.dice.com" } }];

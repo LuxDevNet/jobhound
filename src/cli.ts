@@ -47,15 +47,15 @@ function parseArgs(args: string[]) {
 
 function printHelp() {
   console.log(`
-Jobhound CLI — Multi-board job scraper, pipeline & presets engine
+Unjobbed CLI — Multi-board job scraper, pipeline & presets engine
 
 USAGE:
-  jobhound run [preset] [options]       Run scraper using CLI flags or a named preset
-  jobhound presets                      List all available search presets
-  jobhound preset save <name> [options] Save search parameters as a named preset in searches/
-  jobhound sources                      List all supported job boards and ATS engines
-  jobhound merge <paths...>             Merge and deduplicate outputs from distributed VM shards
-  jobhound help                         Show this help message
+  unjobbed run [preset] [options]       Run scraper using CLI flags or a named preset
+  unjobbed presets                      List all available search presets
+  unjobbed preset save <name> [options] Save search parameters as a named preset in searches/
+  unjobbed sources                      List all supported job boards and ATS engines
+  unjobbed merge <paths...>             Merge and deduplicate outputs from distributed VM shards
+  unjobbed help                         Show this help message
 
 SEARCH OPTIONS:
   -k, --keywords <str>         Job keywords / title (e.g. "Staff Engineer")

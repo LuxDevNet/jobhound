@@ -1,7 +1,7 @@
 {
   "actorSpecification": 1,
-  "name": "jobhound",
-  "title": "Jobhound: multi-board job search",
+  "name": "unjobbed",
+  "title": "Unjobbed: multi-board job search & intelligence pipeline",
   "description": "One query across LinkedIn, Indeed, Glassdoor, Wellfound, Upwork, ZipRecruiter, Dice, SimplyHired, Monster, BuiltIn, RemoteOK, Remotive, Himalayas, We Work Remotely, HN Who's Hiring, and Greenhouse/Lever/Ashby company boards. Normalized, deduped, scored.",
   "version": "1.0",
   "buildTag": "latest",

@@ -1,6 +1,6 @@
-# Jobhound — your own Apify job scraper (TypeScript + Crawlee)
+# Unjobbed — multi-board job search & intelligence pipeline (TypeScript + Crawlee)
 
-One query → 18 job boards → one normalized, deduped, scored dataset. No third-party actors, no per-result fees: you run your own code.
+One query → 18 job boards & direct ATS feeds → one normalized, deduped, scored dataset. No third-party actors, no per-result fees: you run your own code.
 
 ## Sources and how each one is scraped
 

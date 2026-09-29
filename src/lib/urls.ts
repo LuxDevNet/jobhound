@@ -301,6 +301,12 @@ export const INDEED_ATTR = {
   temporary: "4HKF7",
   internship: "VDTG7",
   remote: "DSQF7",
+  hybrid: "PA55J",
+  onsite: "7WFD7",
+  direct_apply: "HFDN6",
+  senior_level: "EXSNN",
+  mid_level: "5Q6K6",
+  entry_level: "FC296",
 } as const;
 
 export const INDEED_DOMAINS: Record<string, string> = {
@@ -339,7 +345,27 @@ export function buildIndeedUrl(q: SearchQuery, start = 0): string {
   // Several job types are OR'ed: attr(A|B|C,OR)  — the comma is double-encoded by Indeed.
   if (typeCodes.length === 1) attrs.push(`attr(${typeCodes[0]})`);
   if (typeCodes.length > 1) attrs.push(`attr(${typeCodes.join("|")}%2COR)`);
-  if (q.remoteOnly) attrs.push(`attr(${INDEED_ATTR.remote})`);
+  if (q.remoteOnly || q.workModes?.includes("remote")) attrs.push(`attr(${INDEED_ATTR.remote})`);
+  if (q.workModes?.includes("hybrid")) attrs.push(`attr(${INDEED_ATTR.hybrid})`);
+  if (q.workModes?.includes("onsite")) attrs.push(`attr(${INDEED_ATTR.onsite})`);
+  if (q.directApplyOnly) attrs.push(`attr(${INDEED_ATTR.direct_apply})`);
+
+  // Native Indeed seniority attribute mappings
+  if (q.seniorityLevels?.length) {
+    const senCodes: string[] = [];
+    if (q.seniorityLevels.some((s) => ["senior", "lead", "staff", "principal", "director", "executive"].includes(s))) {
+      senCodes.push(INDEED_ATTR.senior_level);
+    }
+    if (q.seniorityLevels.includes("mid")) {
+      senCodes.push(INDEED_ATTR.mid_level);
+    }
+    if (q.seniorityLevels.some((s) => ["entry", "intern"].includes(s))) {
+      senCodes.push(INDEED_ATTR.entry_level);
+    }
+    if (senCodes.length === 1) attrs.push(`attr(${senCodes[0]})`);
+    if (senCodes.length > 1) attrs.push(`attr(${senCodes.join("|")}%2COR)`);
+  }
+
   if (attrs.length) parts.push(`sc=${encodeURIComponent(`0kf:${attrs.join("")};`)}`);
   parts.push("sort=date");
   if (start) parts.push(`start=${start}`);

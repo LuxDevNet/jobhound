@@ -1,5 +1,5 @@
 {
-  "name": "jobhound",
+  "name": "unjobbed",
   "version": "1.1.0",
   "description": "Typed, multi-board job search pipeline on top of Apify actors. One query in, one clean deduped job list out.",
   "type": "module",
@@ -8,7 +8,7 @@
     "node": ">=20.12"
   },
   "bin": {
-    "jobhound": "./src/cli.ts"
+    "unjobbed": "./src/cli.ts"
   },
   "scripts": {
     "jobs": "tsx src/cli.ts",
