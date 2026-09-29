@@ -39,6 +39,7 @@
   ],
   "scripts": {
     "jobs": "tsx src/cli.ts",
+    "ui": "tsx src/cli.ts ui",
     "run:sd": "tsx src/cli.ts run san-diego-120k",
     "dry": "tsx src/cli.ts run san-diego-120k --dry-run",
     "sources": "tsx src/cli.ts sources",

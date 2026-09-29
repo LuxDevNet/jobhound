@@ -5,6 +5,8 @@ import { SOURCES } from "./sources.ts";
 import { SOURCE_IDS, type Job } from "./model.ts";
 import { loadPreset, listAllPresets, savePreset } from "./presets.ts";
 import { hash, normCity, normCompany, normTitle } from "./lib/text.ts";
+import { launchTui, loadRecentJobs } from "./tui.ts";
+import { evaluateJobMatch, rankJobsByProfile, autofillApplication, analyzeGhostJob, filterGhostJobs, type CandidateProfile } from "./pro/index.ts";
 
 function parseArgs(args: string[]) {
   const flags: Record<string, any> = {};
@@ -326,6 +328,80 @@ async function mergeDatasets(paths: string[], flags: Record<string, any>) {
   console.log(JSON.stringify(merged, null, 2));
 }
 
+async function handleMatchCommand(profilePath?: string, flags: Record<string, any> = {}) {
+  const file = profilePath || (typeof flags.profile === "string" ? flags.profile : undefined);
+  if (!file) {
+    console.error("Please provide a candidate profile JSON file path (e.g. unjobbed match ./profile.json)");
+    process.exit(1);
+  }
+
+  const raw = await fs.readFile(path.resolve(process.cwd(), file), "utf-8");
+  const profile = JSON.parse(raw) as CandidateProfile;
+  const jobs = await loadRecentJobs();
+
+  console.log(`\nEvaluating ${jobs.length} jobs against profile: ${profile.name} (${profile.title || "Candidate"})...\n`);
+  const ranked = rankJobsByProfile(jobs, profile, Number(flags["min-fit"] || 0));
+
+  console.log("FIT %".padEnd(8) + "TITLE".padEnd(36) + "COMPANY".padEnd(20) + "MATCHING SKILLS");
+  console.log("-".repeat(80));
+
+  for (const item of ranked.slice(0, 20)) {
+    const fitStr = `${item.match.matchScore}%`.padEnd(8);
+    const titleStr = (item.job.title.length > 34 ? item.job.title.slice(0, 31) + "..." : item.job.title).padEnd(36);
+    const coStr = ((item.job.company ?? "Unknown").length > 18 ? (item.job.company ?? "Unknown").slice(0, 15) + "..." : (item.job.company ?? "Unknown")).padEnd(20);
+    const skillsStr = item.match.matchingSkills.slice(0, 4).join(", ") || "General";
+    console.log(fitStr + titleStr + coStr + skillsStr);
+  }
+}
+
+async function handleApplyCommand(jobUrlOrId?: string, flags: Record<string, any> = {}) {
+  if (!jobUrlOrId) {
+    console.error("Please provide a job URL to apply (e.g. unjobbed apply https://boards.greenhouse.io/stripe/jobs/123 --profile ./profile.json)");
+    process.exit(1);
+  }
+
+  const profileFile = typeof flags.profile === "string" ? flags.profile : undefined;
+  let profile: CandidateProfile = {
+    name: "Candidate Name",
+    email: "candidate@example.com",
+    skills: ["TypeScript", "React"],
+  };
+
+  if (profileFile) {
+    try {
+      const raw = await fs.readFile(path.resolve(process.cwd(), profileFile), "utf-8");
+      profile = JSON.parse(raw);
+    } catch {}
+  }
+
+  console.log(`[Pro Auto-Applier] Initiating 1-Click ATS autofill on ${jobUrlOrId}...`);
+  const res = await autofillApplication(jobUrlOrId, profile, {
+    dryRun: !flags.submit,
+    resumePath: typeof flags.resume === "string" ? flags.resume : undefined,
+  });
+
+  console.log(`[Pro Auto-Applier] Result: ${res.message}`);
+}
+
+async function handleGhostCommand(flags: Record<string, any> = {}) {
+  const jobs = await loadRecentJobs();
+  console.log(`\nRunning Ghost Job Radar across ${jobs.length} cached jobs...\n`);
+
+  console.log("GHOST PROB".padEnd(14) + "TITLE".padEnd(36) + "COMPANY".padEnd(20) + "SIGNALS");
+  console.log("-".repeat(85));
+
+  for (const j of jobs) {
+    const analysis = analyzeGhostJob(j);
+    if (analysis.ghostProbability >= (Number(flags["min-prob"]) || 30)) {
+      const probStr = `${analysis.ghostProbability}% (${analysis.isLikelyGhost ? "GHOST" : "WATCH"})`.padEnd(14);
+      const titleStr = (j.title.length > 34 ? j.title.slice(0, 31) + "..." : j.title).padEnd(36);
+      const coStr = ((j.company ?? "Unknown").length > 18 ? (j.company ?? "Unknown").slice(0, 15) + "..." : (j.company ?? "Unknown")).padEnd(20);
+      const reasonStr = analysis.reasons.join("; ").slice(0, 40);
+      console.log(probStr + titleStr + coStr + reasonStr);
+    }
+  }
+}
+
 async function main() {
   const argv = process.argv.slice(2);
   const { flags, positional } = parseArgs(argv);
@@ -334,6 +410,19 @@ async function main() {
   switch (command) {
     case "run":
       await runScraper(flags, positional[1]);
+      break;
+    case "ui":
+    case "tui":
+      await launchTui();
+      break;
+    case "match":
+      await handleMatchCommand(positional[1], flags);
+      break;
+    case "apply":
+      await handleApplyCommand(positional[1], flags);
+      break;
+    case "ghost":
+      await handleGhostCommand(flags);
       break;
     case "presets":
     case "preset":
@@ -353,6 +442,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Jobhound Error:", err);
+  console.error("Unjobbed Error:", err);
   process.exit(1);
 });
